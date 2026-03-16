@@ -76,7 +76,7 @@ const languages = [
   'PLpgSQL', 'TSQL', 'Dart', 'Swift', 'HTML', 'CSS', 'Elixir', 'Haskell',
   'Solidity', 'Assembly', 'R', 'Scala', 'Julia', 'Lua', 'Clojure', 'Erlang',
   'Common Lisp', 'Emacs Lisp', 'OCaml', 'MATLAB', 'Objective-C', 'Perl',
-  'Fortran', 'Others',
+  'Fortran', 'Zig', 'Others',
 ];
 const OSSINSIGHT_REPO_QUERY_KEY = ['repo-meta', 'pingcap', 'ossinsight'] as const;
 const ONE_HOUR = 60 * 60 * 1000;
