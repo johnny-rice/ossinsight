@@ -1977,10 +1977,17 @@ export function ExploreContent() {
     );
   }, [recommendQuestions, selectedTag]);
 
+  const MAX_QUESTION_LENGTH = 200;
+
   const executeQuestion = useCallback(
     (rawQuestion: string) => {
       const question = rawQuestion.trim();
       if (!question) {
+        return;
+      }
+      if (question.length > MAX_QUESTION_LENGTH) {
+        setErrorMessage(`Question is too long (${question.length} characters). Please keep it under ${MAX_QUESTION_LENGTH} characters.`);
+        setExecutionPhase('idle');
         return;
       }
 

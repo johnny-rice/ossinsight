@@ -85,7 +85,7 @@ function AllContributions ({ userId }: { userId: number }) {
 function ContributionTime ({ userId }: { userId: number }) {
   const [period, setPeriod] = useState('past_1_year');
   const [type, setType] = useState('all');
-  const [zone, setZone] = useState(0);
+  const [zone, setZone] = useState(() => Math.round(-new Date().getTimezoneOffset() / 60));
 
   const { data } = usePersonalData('personal-contribution-time-distribution', userId, { period });
   const filteredData = useMemo(() => (data ?? []).filter(item => item.type === type), [data, type]);
