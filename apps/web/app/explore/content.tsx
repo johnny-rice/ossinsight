@@ -612,7 +612,7 @@ function ExploreHero({
             disabled={isLoading}
             onChange={(event) => onInputChange(event.currentTarget.value)}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' && !event.shiftKey) {
+              if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
                 event.preventDefault();
                 onSubmit(input);
               }
