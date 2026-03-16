@@ -93,7 +93,7 @@ export function CommitsSection() {
         Commits Time Distribution
       </h3>
       <p className="text-sm text-gray-500 pb-4">
-        The Heat Maps below describe the number of commit events that occur at a particular point of time (UTC+0).
+        The Heat Maps below describe the number of commit events that occur at a particular point of time.
       </p>
       <div className="flex gap-2 pb-6">
         <HLSelect<string>
