@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Gauge, Pencil } from 'lucide-react';
 import type { EChartsOption } from 'echarts';
 import { ShowSQLInline } from '@/components/Analyze/ShowSQL';
@@ -143,7 +144,7 @@ function TrendChartSkeleton({
 }
 
 function BarChartRaceSection({ collectionId, collectionName }: { collectionId: number; collectionName: string }) {
-  const [metric, setMetric] = useState<CollectionMetric>('stars');
+  const [metric, setMetric] = useMetricFromUrl('bar-chart-race');
   const [playing, setPlaying] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
@@ -322,7 +323,7 @@ function BarChartRaceSection({ collectionId, collectionName }: { collectionId: n
 }
 
 function HistoricalTrendSection({ collectionId, collectionName }: { collectionId: number; collectionName: string }) {
-  const [metric, setMetric] = useState<CollectionMetric>('stars');
+  const [metric, setMetric] = useMetricFromUrl('historical-trending');
   const dataPath = getCollectionHistoryPath(collectionId, metric);
   const explainPath = getCollectionHistoryExplainPath(collectionId, metric);
   const { data, loading, hasLoaded, error } = useCollectionApi<CollectionQueryResponse<HistoryRow>>(dataPath);
@@ -429,6 +430,49 @@ function HistoricalTrendSection({ collectionId, collectionName }: { collectionId
       {hasLoaded && !loading && !error && topSeries.entries.length === 0 && <div className="py-10 text-center text-[#7c7c7c]">No data available.</div>}
     </section>
   );
+}
+
+// --- URL param <-> metric mapping ---
+const URL_TO_METRIC: Record<string, CollectionMetric> = {
+  stars: 'stars',
+  prs: 'pull-requests',
+  'pull-requests': 'pull-requests',
+  'pr-creators': 'pull-request-creators',
+  'pull-request-creators': 'pull-request-creators',
+  issues: 'issues',
+};
+
+const METRIC_TO_URL: Record<CollectionMetric, string> = {
+  stars: 'stars',
+  'pull-requests': 'prs',
+  'pull-request-creators': 'pr-creators',
+  issues: 'issues',
+};
+
+function parseMetricParam(value: string | null): CollectionMetric {
+  if (!value) return 'stars';
+  return URL_TO_METRIC[value] ?? 'stars';
+}
+
+function useMetricFromUrl(paramName: string): [CollectionMetric, (m: CollectionMetric) => void] {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [metric, setMetricState] = useState<CollectionMetric>(() =>
+    parseMetricParam(searchParams.get(paramName)),
+  );
+
+  const setMetric = useCallback(
+    (m: CollectionMetric) => {
+      setMetricState(m);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(paramName, METRIC_TO_URL[m]);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [paramName, pathname, router, searchParams],
+  );
+
+  return [metric, setMetric];
 }
 
 export function CollectionTrends({ collection }: { collection: Collection }) {
