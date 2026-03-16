@@ -25,6 +25,10 @@ const DOMAIN_GUIDE = [
   "- month trends should usually use DATE_FORMAT(created_at, '%Y-%m-01')",
   "- when the question says developers, people, or users, prefer github_users.type = 'USR'",
   "- when the question says organizations or orgs, prefer github_users.type = 'ORG'",
+  "- this database ONLY contains GitHub data; if the question is clearly unrelated to GitHub or open-source (e.g. chemistry, weather, stock prices), set sql to null and explain in summary that the question is outside the scope of GitHub data",
+  "- repo language info is in github_repos.primary_language, NOT in github_events",
+  "- to find a specific repo, use github_repos.repo_name = 'owner/repo' (exact match) or LIKE '%keyword%'",
+  "- for star history of a repo, count WatchEvent grouped by month with repo_name filter",
 ];
 
 const SQL_RULES = [
