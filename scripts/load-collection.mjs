@@ -62,10 +62,24 @@ console.log(`\nCollection: ${yml.name} (id: ${yml.id})`);
 console.log(`YAML items: ${yml.items.length}`);
 yml.items.forEach(n => console.log(`  ${n}`));
 
-// Load @tidbcloud/serverless from apps/web dependencies
+// Load @tidbcloud/serverless — try multiple locations for compatibility with CI and local dev
 import { createRequire } from 'module';
-const require = createRequire(join(root, 'apps', 'web', 'node_modules', '.pnpm', '@tidbcloud+serverless@0.0.6', 'node_modules', '@tidbcloud', 'serverless', 'package.json'));
-const { connect } = require('@tidbcloud/serverless');
+let connect;
+const searchPaths = [
+  join(root, 'node_modules', '@tidbcloud', 'serverless', 'package.json'),
+  join(root, 'apps', 'web', 'node_modules', '.pnpm', '@tidbcloud+serverless@0.0.6', 'node_modules', '@tidbcloud', 'serverless', 'package.json'),
+];
+for (const p of searchPaths) {
+  try {
+    const req = createRequire(p);
+    connect = req('@tidbcloud/serverless').connect;
+    break;
+  } catch {}
+}
+if (!connect) {
+  console.error('Cannot find @tidbcloud/serverless. Run: npm install @tidbcloud/serverless');
+  process.exit(1);
+}
 const db = connect({
   url: process.env.DATABASE_URL,
   database: process.env.OSSINSIGHT_DATABASE || 'gharchive_dev',
