@@ -15,6 +15,7 @@ import {
 } from '@primer/octicons-react';
 
 import Analyze from '@/components/Analyze/Analyze';
+import SimilarReposRadial from './SimilarReposRadial';
 import { useAnalyzeChartContext, useAnalyzeContext } from '@/components/Analyze/context';
 import { queryAPI } from '@/utils/api';
 
@@ -340,6 +341,11 @@ export function OverviewSection() {
         vsRepoName={comparingRepoName}
         style={{ height: vs ? 400 : 300 }}
       />
+
+      {!vs && <SimilarReposRadial />}
     </section>
   );
 }
+
+// EOF - SimilarRepos moved to SimilarReposRadial.tsx
+// (removed old inline implementation)
