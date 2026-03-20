@@ -610,6 +610,63 @@ function toCollectionSearchParams(collectionId: number | string) {
   return searchParams;
 }
 
+export const LANGUAGES = [
+  'JavaScript', 'Java', 'Python', 'PHP', 'C++', 'C#', 'TypeScript', 'Shell', 'C', 'Ruby',
+  'Rust', 'Go', 'Kotlin', 'HCL', 'PowerShell', 'CMake', 'Groovy', 'PLpgSQL', 'TSQL', 'Dart',
+  'Swift', 'HTML', 'CSS', 'Elixir', 'Haskell', 'Solidity', 'Assembly', 'R', 'Scala', 'Julia',
+  'Lua', 'Clojure', 'Erlang', 'Common Lisp', 'Emacs Lisp', 'OCaml', 'MATLAB', 'Objective-C',
+  'Perl', 'Fortran',
+] as const;
+
+export type Language = (typeof LANGUAGES)[number];
+
+export function isValidLanguage(lang: string): lang is Language {
+  return (LANGUAGES as readonly string[]).includes(lang);
+}
+
+export async function getTrendingReposByLanguage(
+  language: string,
+  period: 'past_24_hours' | 'past_week' | 'past_month' = 'past_month',
+  signal?: AbortSignal,
+) {
+  const { rows } = await executeRows(
+    `
+      WITH latest_snapshot AS (
+        SELECT MAX(dt) AS dt
+        FROM mv_trending_repos
+        WHERE language = :lang
+          AND period = :per
+      )
+      SELECT
+        tr.repo_id,
+        gr.repo_name,
+        gr.primary_language AS language,
+        gr.description,
+        tr.stars,
+        tr.forks,
+        tr.total_score
+      FROM mv_trending_repos tr
+      JOIN latest_snapshot ls ON tr.dt = ls.dt
+      JOIN github_repos gr ON tr.repo_id = gr.repo_id
+      WHERE tr.language = :lang
+        AND tr.period = :per
+      ORDER BY tr.total_score DESC
+      LIMIT 50
+    `,
+    { lang: language, per: period },
+    signal,
+  );
+  return rows as Array<{
+    repo_id: number;
+    repo_name: string;
+    language: string;
+    description: string;
+    stars: number;
+    forks: number;
+    total_score: number;
+  }>;
+}
+
 export async function getTopReposForSitemap(limit = 1000, signal?: AbortSignal) {
   const { rows } = await executeRows(
     `
