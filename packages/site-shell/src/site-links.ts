@@ -60,6 +60,12 @@ export function createAppHeaderConfig(app: SiteApp, env: EnvMap = process.env): 
         forceReload: app !== 'web',
       },
       {
+        label: 'Trending',
+        href: getCrossAppHref(app, 'web', '/trending', env),
+        matchPrefixes: app === 'web' ? ['/trending'] : [],
+        forceReload: app !== 'web',
+      },
+      {
         label: 'Languages',
         href: getCrossAppHref(app, 'web', '/languages', env),
         matchPrefixes: app === 'web' ? ['/languages'] : [],
@@ -72,14 +78,13 @@ export function createAppHeaderConfig(app: SiteApp, env: EnvMap = process.env): 
         forceReload: app !== 'docs',
       },
       {
-        label: 'API',
-        href: getCrossAppHref(app, 'docs', '/docs/api', env),
-        matchPrefixes: app === 'docs' ? ['/docs/api'] : [],
-        forceReload: app !== 'docs',
-      },
-      {
         label: 'More',
         items: [
+          {
+            label: 'API',
+            href: getCrossAppHref(app, 'docs', '/docs/api', env),
+            forceReload: app !== 'docs',
+          },
           {
             label: 'About OSS Insight',
             href: getCrossAppHref(app, 'docs', '/docs/about', env),
