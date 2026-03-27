@@ -387,7 +387,7 @@ function renderExplorerCell(column: string, value: unknown) {
         className="text-[#fbe593] transition-colors hover:text-[#fceeb4]"
         href={String(value)}
         target="_blank"
-        rel="noreferrer"
+        rel="noopener noreferrer"
       >
         {value}
       </a>
@@ -1356,7 +1356,7 @@ function ExplorerResult({
                     className="site-link"
                     href="https://github.com/pingcap/ossinsight/issues"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                   >
                     report an issue
                   </a>{' '}
@@ -1698,7 +1698,7 @@ function ExploreAdsCard({ href, size = 'default' }: { href: string; size?: 'defa
     <a
       href={href}
       target="_blank"
-      rel="noreferrer"
+      rel="noopener noreferrer"
       className="block rounded-[6px] bg-[linear-gradient(90deg,#FFBCA7_2.21%,#DAA3D8_30.93%,#B587FF_67.95%,#6B7AFF_103.3%)] p-px transition hover:scale-[1.02] hover:shadow-[0_20px_36px_rgba(0,0,0,0.24)]"
     >
         <span className="block rounded-[6px] border border-dashed border-[#1a1a1b]">
@@ -1780,7 +1780,7 @@ function ExploreBottomAdsSection() {
         <a
           href="https://tidbcloud.com/channel?utm_source=ossinsight&utm_medium=referral&utm_campaign=chat2query_202301&utm_content=result_bottom"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="block rounded-[6px] bg-[linear-gradient(90deg,#FFBCA7_2.21%,#DAA3D8_30.93%,#B587FF_67.95%,#6B7AFF_103.3%)] p-px transition hover:scale-[1.02] hover:shadow-[0_20px_36px_rgba(0,0,0,0.24)]"
         >
           <span className="block h-full rounded-[6px] border border-dashed border-[#1a1a1b]">
@@ -1856,11 +1856,11 @@ function ExploreFaqSection() {
       </div>
       <p className="mt-8 text-center text-[16px] text-[#929292]">
         Still having trouble? Contact us, we&apos;re happy to help!{' '}
-        <a className="site-link" href="https://github.com/pingcap/ossinsight/issues" target="_blank" rel="noreferrer">
+        <a className="site-link" href="https://github.com/pingcap/ossinsight/issues" target="_blank" rel="noopener noreferrer">
           GitHub
         </a>{' '}
         {' · '}
-        <a className="site-link" href="https://twitter.com/OSSInsight" target="_blank" rel="noreferrer">
+        <a className="site-link" href="https://twitter.com/OSSInsight" target="_blank" rel="noopener noreferrer">
           Twitter
         </a>
       </p>
