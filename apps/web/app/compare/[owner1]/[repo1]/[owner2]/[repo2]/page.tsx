@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { getRepoByName } from '@/lib/server/internal-api';
 import { BreadcrumbListJsonLd, SoftwareApplicationJsonLd } from '@/components/json-ld';
-import ShareButtons from '@/components/ShareButtons';
 import RepoAnalyzePage from '@/app/analyze/(repo)/[owner]/[repo]/content';
+import ShareButtons from '@/components/ShareButtons';
 
 interface PageProps {
   params: Promise<{ owner1: string; repo1: string; owner2: string; repo2: string }>;
@@ -60,14 +60,6 @@ export default async function ComparePage({ params }: PageProps) {
           url: `https://github.com/${owner2}`,
         }}
       />
-      <ShareButtons
-        url={`/compare/${owner1}/${repo1}/${owner2}/${repo2}`}
-        title={`${owner1}/${repo1} vs ${owner2}/${repo2} — compare on OSSInsight`}
-        className="fixed right-4 top-1/2 -translate-y-1/2 flex-col z-50 bg-gray-900/80 backdrop-blur rounded-lg p-1.5 shadow-lg"
-        stars={(repoInfo.stars ?? 0) + (vsRepoInfo.stars ?? 0)}
-        forks={(repoInfo.forks ?? 0) + (vsRepoInfo.forks ?? 0)}
-        hashtags={['opensource', 'github', 'comparison']}
-      />
       <div className="sr-only">
         <h1>{repoInfo.full_name} vs {vsRepoInfo.full_name} — GitHub Repository Comparison</h1>
         <p>
@@ -81,6 +73,7 @@ export default async function ComparePage({ params }: PageProps) {
         vsRepoInfo={vsRepoInfo}
         vsName={vsName}
       />
+      <ShareButtons url={`/compare/${owner1}/${repo1}/${owner2}/${repo2}`} title={`${owner1}/${repo1} vs ${owner2}/${repo2} — compare on OSSInsight`} />
     </>
   );
 }
@@ -109,7 +102,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description = `Compare ${name1} (${nf.format(repoInfo.stars)}\u2B50) vs ${name2} (${nf.format(vsRepoInfo.stars)}\u2B50) — stars, commits, contributors, pull requests, and more.`;
     }
   } catch (error) {
-    console.warn(`[compare] Failed to fetch repo info for ${name1} vs ${name2} metadata:`, error);
+    // metadata fetch failed – use default description
   }
 
   return {

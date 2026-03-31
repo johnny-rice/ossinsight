@@ -4,7 +4,20 @@ import { fetchOwnerInfo } from '@/app/analyze/(org)/[owner]/fetchOwner';
 import OrgAnalyzePageHeader from '@/components/Analyze/Header/OrgHeader';
 import AnalyzeOwnerContextProvider from '@/components/Context/Analyze/AnalyzeOwner';
 import { BreadcrumbListJsonLd } from '@/components/json-ld';
+import ShareButtons from '@/components/ShareButtons';
 import { Metadata } from 'next';
+
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  return [
+    { owner: 'pingcap' },
+    { owner: 'microsoft' },
+    { owner: 'google' },
+    { owner: 'facebook' },
+    { owner: 'vercel' },
+  ];
+}
 
 export default async function Page ({ params }: { params: Promise<{ owner: string }> }) {
   const { owner } = await params;
@@ -41,6 +54,7 @@ export default async function Page ({ params }: { params: Promise<{ owner: strin
           Data is sourced from GitHub events via GH Archive and updated in near real-time.
         </p>
       </div>
+      <ShareButtons url={`/analyze/${data.login}`} title={`${displayName} — GitHub Organization Analytics`} />
       <OrgAnalyzePageHeader />
       <Content />
     </AnalyzeOwnerContextProvider>

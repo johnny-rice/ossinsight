@@ -9,6 +9,8 @@ import {
   PersonIcon,
 } from '@primer/octicons-react';
 import Analyze from '@/components/Analyze/Analyze';
+import { ScrollspySectionWrapper } from '@/components/Scrollspy/SectionWrapper';
+import { SectionHeading } from '@/components/ui/SectionHeading';
 import { useAnalyzeChartContext, useAnalyzeContext } from '@/components/Analyze/context';
 
 const RepoChart = dynamic(
@@ -58,11 +60,11 @@ function IssueSummaryTable() {
                 <span>{item.label}</span>
               </span>
             </td>
-            <td className="py-3 text-right text-[28px] font-semibold leading-none text-[#e9eaee] tabular-nums">
+            <td className="py-3 text-right text-[15px] font-medium leading-none text-[#e9eaee] tabular-nums">
               {loading ? <span className="inline-block h-6 w-16 animate-pulse rounded bg-[#343436]" /> : (item.value?.toLocaleString() ?? '-')}
             </td>
             {hasVs && (
-              <td className="py-3 pl-4 text-right text-[28px] font-semibold leading-none text-[#e9eaee] tabular-nums">
+              <td className="py-3 pl-4 text-right text-[15px] font-medium leading-none text-[#e9eaee] tabular-nums">
                 {loading ? <span className="inline-block h-6 w-16 animate-pulse rounded bg-[#343436]" /> : (item.vsValue?.toLocaleString() ?? '-')}
               </td>
             )}
@@ -80,10 +82,8 @@ export function IssuesSection() {
   const hasVs = comparingRepoId != null;
 
   return (
-    <section id="issues" className="pt-8 pb-8">
-      <h2 className="text-2xl font-semibold text-white pb-3" style={{ scrollMarginTop: '140px' }}>
-        Issues
-      </h2>
+    <ScrollspySectionWrapper anchor="issues" className="pt-8 pb-8">
+      <SectionHeading>Issues</SectionHeading>
 
       <div className={hasVs ? 'max-w-[720px]' : 'max-w-[560px]'}>
         <Analyze query="analyze-repo-issue-overview">
@@ -91,13 +91,6 @@ export function IssuesSection() {
         </Analyze>
       </div>
 
-      <h3
-        id="issue-first-responded-time"
-        className="mt-6 pb-2 text-[24px] font-semibold text-[#e9eaee]"
-        style={{ scrollMarginTop: '140px' }}
-      >
-        Issue First Responded Time
-      </h3>
       <p className="pb-4 text-[16px] leading-7 text-[#7c7c7c]">
         The time of an issue from open to first-responded (exclude bots).
         <br />
@@ -106,6 +99,7 @@ export function IssuesSection() {
         e.g. p25: 1h means 25% issues are responded within 1 hour.
       </p>
       <RepoChart
+        title="Issue First Responded Time"
         name="@ossinsight/widget-analyze-repo-issue-open-to-first-responded"
         visualizer={() => import('@/charts/analyze/repo/issue-open-to-first-responded/visualization')}
         repoId={repoId!}
@@ -115,17 +109,11 @@ export function IssuesSection() {
         style={{ height: 400 }}
       />
 
-      <h3
-        id="issue-history"
-        className="mt-6 pb-2 text-[24px] font-semibold text-[#e9eaee]"
-        style={{ scrollMarginTop: '140px' }}
-      >
-        Issue History
-      </h3>
       <p className="pb-4 text-[16px] leading-7 text-[#7c7c7c]">
         Monthly opened/closed issues and the historical totals.
       </p>
       <RepoChart
+        title="Issue History"
         name="@ossinsight/widget-analyze-repo-issue-opened-and-closed"
         visualizer={() => import('@/charts/analyze/repo/issue-opened-and-closed/visualization')}
         repoId={repoId!}
@@ -134,6 +122,6 @@ export function IssuesSection() {
         vsRepoName={comparingRepoName}
         style={{ height: 400 }}
       />
-    </section>
+    </ScrollspySectionWrapper>
   );
 }

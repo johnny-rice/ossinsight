@@ -1,71 +1,50 @@
 'use client';
-import SectionTemplate from '@/components/Analyze/Section';
 import ChartTemplate from '@/components/Analyze/Section/Chart';
-import { MainSideGridTemplate } from '@/components/Analyze/Section/gridTemplates/MainSideGridTemplate';
-import { SplitTemplate } from '@/components/Analyze/Section/gridTemplates/SplitTemplate';
-import { getWidgetSize } from '@/utils/format';
+import { getWidgetSize } from '@/lib/charts-utils/utils';
+import { ScrollspySectionWrapper } from '@/components/Scrollspy/SectionWrapper';
+import { SectionHeading } from '@/components/ui/SectionHeading';
 import * as React from 'react';
 
 export default function EngagementContent () {
   return (
-    <SectionTemplate
-      id="engagement"
-      title="Engagement"
-      level={3}
-      className="pt-8 flex flex-col gap-4"
-    >
-      <MainSideGridTemplate>
+    <ScrollspySectionWrapper anchor="engagement" className="pt-8 pb-8">
+      <SectionHeading level="h3">Engagement</SectionHeading>
+      <p className="pb-4 text-[16px] leading-7 text-[#7c7c7c]">
+        Track participant growth, engagement patterns, and community health over time.
+      </p>
+      <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-4">
+          <ChartTemplate
+            name="@ossinsight/widget-compose-org-participants-growth"
+            title="Active Participants"
+            visualizer={() => import('@/charts/analyze/org/recent-stats/visualization')}
+            searchParams={{
+              activity: 'active',
+            }}
+            className="w-full"
+            height={getWidgetSize().widgetWidth(4)}
+          />
+          <ChartTemplate
+            name="@ossinsight/widget-compose-org-participants-growth"
+            title="New Participants"
+            visualizer={() => import('@/charts/analyze/org/recent-stats/visualization')}
+            searchParams={{
+              activity: 'new',
+            }}
+            className="w-full"
+            height={getWidgetSize().widgetWidth(4)}
+          />
+        </div>
+
+
         <ChartTemplate
-          name="@ossinsight/widget-compose-org-participants-growth"
-          visualizer={() => import('@/charts/compose/org/participants-growth/visualization')}
-          searchParams={{
-            activity: 'active',
-          }}
-          height={getWidgetSize().widgetWidth(4)}
-        />
-        <ChartTemplate
-          name="@ossinsight/widget-compose-org-activity-active-ranking"
-          visualizer={() => import('@/charts/compose/org/activity-active-ranking/visualization')}
-          searchParams={{
-            activity: 'participants',
-          }}
-          height={getWidgetSize().widgetWidth(4)}
-        />
-      </MainSideGridTemplate>
-      <MainSideGridTemplate>
-        <ChartTemplate
-          name="@ossinsight/widget-compose-org-participants-growth"
-          visualizer={() => import('@/charts/compose/org/participants-growth/visualization')}
-          searchParams={{
-            activity: 'new',
-          }}
-          height={getWidgetSize().widgetWidth(4)}
-        />
-        <ChartTemplate
-          name="@ossinsight/widget-compose-org-activity-new-ranking"
-          visualizer={() => import('@/charts/compose/org/activity-new-ranking/visualization')}
-          searchParams={{
-            activity: 'participants',
-          }}
-          height={getWidgetSize().widgetWidth(4)}
-        />
-      </MainSideGridTemplate>
-      <SplitTemplate>
-        <ChartTemplate
-          name="@ossinsight/widget-compose-org-participants-roles-ratio"
-          visualizer={() => import('@/charts/compose/org/participants-roles-ratio/visualization')}
-          className="w-full"
+          name="@ossinsight/widget-analyze-org-engagement-scatter"
+          title="Engagement Scatter"
+          visualizer={() => import('@/charts/analyze/org/engagement-scatter/visualization')}
           searchParams={{}}
           height={getWidgetSize().widgetWidth(5)}
         />
-        <ChartTemplate
-          name="@ossinsight/widget-compose-org-engagement-scatter"
-          visualizer={() => import('@/charts/compose/org/engagement-scatter/visualization')}
-          className="w-full"
-          searchParams={{}}
-          height={getWidgetSize().widgetWidth(5)}
-        />
-      </SplitTemplate>
-    </SectionTemplate>
+      </div>
+    </ScrollspySectionWrapper>
   );
 }

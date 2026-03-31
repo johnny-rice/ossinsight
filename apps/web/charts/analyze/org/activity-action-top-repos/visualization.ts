@@ -158,8 +158,7 @@ export default function (
         },
         splitLine: {
           lineStyle: {
-            color: 'rgba(255,255,255,0.08)',
-            type: 'dashed',
+            color: '#2a2a2c', type: 'dashed',
           },
         },
       },
@@ -186,7 +185,7 @@ export const eventHandlers = [
   {
     type: 'click',
     option: 'xAxis.category',
-    handler: (params) => {
+    handler: (params: any) => {
       if (params?.value) {
         window.open(`/analyze/${params.value}`);
       }

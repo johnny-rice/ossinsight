@@ -2,9 +2,19 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getRepoByName } from '@/lib/server/internal-api';
 import { BreadcrumbListJsonLd, SoftwareApplicationJsonLd, SoftwareSourceCodeJsonLd } from '@/components/json-ld';
-import { Breadcrumb } from '@/components/Breadcrumb';
-import ShareButtons from '@/components/ShareButtons';
 import RepoAnalyzePage from './content';
+
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  return [
+    { owner: 'pingcap', repo: 'tidb' },
+    { owner: 'facebook', repo: 'react' },
+    { owner: 'microsoft', repo: 'vscode' },
+    { owner: 'tensorflow', repo: 'tensorflow' },
+    { owner: 'kubernetes', repo: 'kubernetes' },
+  ];
+}
 
 interface PageProps {
   params: Promise<{ owner: string; repo: string }>;
@@ -62,24 +72,6 @@ export default async function Page({ params, searchParams }: PageProps) {
         language={repoInfo.language}
         url={`/analyze/${owner}/${repo}`}
       />
-      <div className="mx-auto max-w-[1280px] px-6 sm:px-8">
-        <Breadcrumb
-          items={[
-            { name: 'Analyze', href: '/analyze' },
-            { name: owner, href: `/analyze/${owner}` },
-            { name: repo },
-          ]}
-        />
-      </div>
-      <ShareButtons
-        url={`/analyze/${owner}/${repo}`}
-        title={`${owner}/${repo} — check the full analytics on OSSInsight`}
-        className="fixed right-4 top-1/2 -translate-y-1/2 flex-col z-50 bg-gray-900/80 backdrop-blur rounded-lg p-1.5 shadow-lg"
-        stars={repoInfo.stars ?? undefined}
-        forks={repoInfo.forks ?? undefined}
-        language={repoInfo.language ?? undefined}
-        hashtags={['opensource', 'github']}
-      />
       <div className="sr-only">
         <h1>{repoInfo.full_name} — GitHub Repository Analytics</h1>
         <p>
@@ -129,7 +121,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       description = `${parts.join(' · ')}. ${repoInfo.description || `Real-time analytics on stars, commits, issues, pull requests, and contributors.`}`;
     }
   } catch (error) {
-    console.warn(`[analyze/${owner}/${repo}] Failed to fetch repo info for metadata:`, error);
+    // metadata fetch failed – use default description
   }
 
   return {

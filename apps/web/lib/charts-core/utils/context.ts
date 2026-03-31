@@ -1,8 +1,8 @@
 import { LinkedDataContext, VisualizationContext, WidgetBaseContext } from '@/lib/charts-types';
-import { generateZoneOptions, PERIOD_OPTIONS } from '@/lib/charts-utils/ui';
+import { generateZoneOptions, PERIOD_OPTIONS } from '@/utils/options/time';
 import * as colors from 'tailwindcss/colors';
 import { LinkedData } from '../parameters/resolver';
-import { darkColorPalette, lightColorPalette } from '../renderer/echarts-theme';
+import { echartsColorPalette } from '../renderer/echarts-theme';
 
 export function createWidgetBaseContext<P extends Record<string, string | string[]>> (runtime: 'client' | 'server', parameters: P, createCanvas: () => HTMLCanvasElement = () => document.createElement('canvas')): WidgetBaseContext {
   return {
@@ -49,6 +49,6 @@ export function createVisualizationContext ({ width, height, dpr, colorScheme = 
     width,
     height,
     dpr,
-    theme: { colors, colorScheme: colorScheme, echartsColorPalette: colorScheme === 'light' ? lightColorPalette : darkColorPalette },
+    theme: { colors, colorScheme: colorScheme, echartsColorPalette },
   };
 }

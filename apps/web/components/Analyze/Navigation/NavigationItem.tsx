@@ -20,7 +20,6 @@ function NavigationAnchorItem ({ item }: { item: NavItemType & { anchor: string 
     document.getElementById(item.anchor)?.scrollIntoView({
       behavior: 'smooth',
     });
-    history.replaceState(history.state, '', '#' + encodeURIComponent(item.anchor));
   }, [item.anchor]);
 
   return (
@@ -28,8 +27,8 @@ function NavigationAnchorItem ({ item }: { item: NavItemType & { anchor: string 
       type="button"
       onClick={handleClick}
       className={twMerge(
-        'flex w-full items-center justify-start gap-2 px-4 py-1.5 text-left transition-colors hover:text-white md:justify-center lg:justify-start',
-        item.Icon ? 'text-sm font-normal' : 'text-sm md:pl-9',
+        'flex w-full items-center justify-start gap-2 px-3 py-2 text-left text-[14px] leading-5 transition-colors',
+        !item.Icon && 'pl-8',
       )}
     >
       {item.Icon && <item.Icon width={16} height={16} />}
@@ -42,8 +41,8 @@ function NavigationTextItem ({ item }: { item: NavItemType }) {
   return (
     <div
       className={clsx(
-        'flex w-full items-center justify-start gap-2 px-4 py-1.5 text-left md:justify-center lg:justify-start',
-        item.Icon ? 'text-sm font-normal' : 'text-sm md:pl-9',
+        'flex w-full items-center justify-start gap-2 px-3 py-2 text-left text-[14px] leading-5',
+        !item.Icon && 'pl-8',
       )}
     >
       {item.Icon && <item.Icon width={16} height={16} />}

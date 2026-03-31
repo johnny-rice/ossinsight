@@ -5,12 +5,25 @@ import { createVisualizationContext, createWidgetContext } from '@/lib/charts-co
 import dynamic from 'next/dynamic';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchRepoChartData, type FetchResult } from './endpoints';
-import { ShowSQLButton } from '@/components/Analyze/ShowSQL';
+import { ShowSQLInline } from '@/components/Analyze/ShowSQL';
 import { ChartSkeleton } from '@/components/ui/skeletons';
+import { useChartContainer } from '@/components/Analyze/hooks/useChartContainer';
 
 const LazyECharts = dynamic(() => import('@/components/Analyze/EChartsWrapper'), { ssr: false });
 
 const dpr = typeof devicePixelRatio === 'number' ? devicePixelRatio : 2;
+
+interface VisualizerModule {
+  type: 'echarts' | 'react-svg' | 'react';
+  default: (...args: any[]) => any;
+  asyncComponent?: boolean;
+}
+
+const TITLE_STYLES = {
+  h2: 'text-[22px] font-semibold text-[#e9eaee]',
+  h3: 'text-[18px] font-semibold text-[#e9eaee]',
+  h4: 'text-[14px] font-medium text-[#e9eaee]',
+} as const;
 
 interface RepoChartProps {
   /** Widget name, e.g. '@ossinsight/widget-analyze-repo-stars-history' */
@@ -24,33 +37,30 @@ interface RepoChartProps {
   /** Comparison repo full name */
   vsRepoName?: string;
   /** Lazy loader that returns the visualization module */
-  visualizer: () => Promise<any>;
+  visualizer: () => Promise<VisualizerModule>;
   /** Extra params for the API (period, zone, activity, limit, etc.) */
   params?: Record<string, any>;
   className?: string;
   /** Use aspectRatio instead of filling parent height */
   aspectRatio?: number;
   style?: React.CSSProperties;
+  /** Chart title — renders a title row with ShowSQL on the right */
+  title?: string;
+  /** Heading level for title. Default: h4 */
+  titleLevel?: 'h2' | 'h3' | 'h4';
+  /** Show inline SHOW SQL button (only used when no title). Default: false */
+  showSQL?: boolean;
+  /** Callback when SQL becomes available (for rendering in parent title row) */
+  onSQLReady?: (sql: string, queryName?: string) => void;
 }
 
 export default function RepoChart({
   name, repoId, repoName, vsRepoId, vsRepoName,
   visualizer, params = {}, className, aspectRatio, style,
+  title, titleLevel = 'h4', showSQL = false, onSQLReady,
 }: RepoChartProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ width: 0, height: 0 });
-  const [vizModule, setVizModule] = useState<any>(null);
-
-  // Observe container size
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => {
-      setSize({ width: entry.contentRect.width, height: entry.contentRect.height });
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+  const { containerRef, size } = useChartContainer();
+  const [vizModule, setVizModule] = useState<VisualizerModule | null>(null);
 
   // Fetch data
   const paramsKey = useMemo(() => JSON.stringify(params), [params]);
@@ -58,6 +68,7 @@ export default function RepoChart({
     queryKey: ['repo-chart', name, repoId, vsRepoId ?? null, paramsKey],
     queryFn: ({ signal }) => fetchRepoChartData(name, repoId, params, vsRepoId, signal),
     placeholderData: keepPreviousData,
+    staleTime: 5 * 60 * 1000, // 5 minutes - chart data doesn't change frequently
   });
   const fetchResult = fetchResultQuery.data ?? null;
   const loading = fetchResultQuery.isPending && !fetchResultQuery.data;
@@ -66,7 +77,7 @@ export default function RepoChart({
   const visualizerRef = useRef(visualizer);
   useEffect(() => {
     let stale = false;
-    visualizerRef.current().then((mod: any) => { if (!stale) setVizModule(mod); });
+    visualizerRef.current().then((mod) => { if (!stale) setVizModule(mod); });
     return () => { stale = true; };
   }, []);
 
@@ -101,20 +112,40 @@ export default function RepoChart({
   const ready = !loading && !!fetchResult && !!vizModule && !!ctx;
 
   const containerStyle: React.CSSProperties = aspectRatio
-    ? { position: 'relative', width: '100%', aspectRatio: String(aspectRatio), ...style }
-    : { position: 'relative', width: '100%', height: '100%', ...style };
+    ? { aspectRatio: String(aspectRatio), ...style }
+    : { ...style };
 
   // SQL info for SHOW SQL button
   const queryParams = useMemo(() => ({ repoId }), [repoId]);
 
+  // Notify parent when SQL is available
+  useEffect(() => {
+    if (fetchResult?.sql && onSQLReady) {
+      onSQLReady(fetchResult.sql, fetchResult.queryName);
+    }
+  }, [fetchResult?.sql, fetchResult?.queryName, onSQLReady]);
+
+  const sqlButton = fetchResult?.sql
+    ? <ShowSQLInline sql={fetchResult.sql} queryName={fetchResult.queryName} queryParams={queryParams} />
+    : null;
+
   return (
-    <div ref={containerRef} className={className} style={containerStyle}>
-      <ShowSQLButton sql={fetchResult?.sql} queryName={fetchResult?.queryName} queryParams={queryParams} />
-      {ready ? (
-        <RepoChartContent vizModule={vizModule} data={fetchResult} ctx={ctx} />
-      ) : loading ? (
-        <ChartSkeleton />
+    <div>
+      {title ? (
+        <div className="flex items-center justify-between gap-4 mb-3">
+          {React.createElement(titleLevel, { className: TITLE_STYLES[titleLevel] }, title)}
+          {sqlButton}
+        </div>
+      ) : showSQL ? (
+        <div className="flex justify-end mb-1">{sqlButton}</div>
       ) : null}
+      <div ref={containerRef} className={`relative w-full overflow-hidden ${className ?? ''}`} style={containerStyle}>
+        {ready ? (
+          <RepoChartContent vizModule={vizModule} data={fetchResult} ctx={ctx} />
+        ) : loading ? (
+          <ChartSkeleton />
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -122,7 +153,7 @@ export default function RepoChart({
 // --- Content dispatcher ---
 
 function RepoChartContent({ vizModule, data, ctx }: {
-  vizModule: any;
+  vizModule: VisualizerModule;
   data: FetchResult;
   ctx: any;
 }) {
@@ -148,7 +179,7 @@ function RepoChartContent({ vizModule, data, ctx }: {
 // --- ECharts renderer ---
 
 function EChartsRenderer({ vizModule, input, ctx }: {
-  vizModule: any;
+  vizModule: VisualizerModule;
   input: any[];
   ctx: any;
 }) {
@@ -161,7 +192,7 @@ function EChartsRenderer({ vizModule, input, ctx }: {
   return (
     <LazyECharts
       option={option}
-      style={{ width: '100%', height: '100%' }}
+      className="w-full h-full"
       notMerge
       lazyUpdate
       theme="dark"
@@ -172,7 +203,7 @@ function EChartsRenderer({ vizModule, input, ctx }: {
 // --- React-SVG renderer ---
 
 function ReactSvgRenderer({ vizModule, input, ctx }: {
-  vizModule: any;
+  vizModule: VisualizerModule;
   input: any[];
   ctx: any;
 }) {
@@ -185,7 +216,7 @@ function ReactSvgRenderer({ vizModule, input, ctx }: {
 }
 
 function AsyncSvgRenderer({ vizModule, input, ctx }: {
-  vizModule: any;
+  vizModule: VisualizerModule;
   input: any[];
   ctx: any;
 }) {

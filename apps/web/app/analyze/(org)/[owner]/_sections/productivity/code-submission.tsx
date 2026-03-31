@@ -1,8 +1,8 @@
 'use client';
-import SectionTemplate from '@/components/Analyze/Section';
 import ChartTemplate from '@/components/Analyze/Section/Chart';
-import { SplitTemplate } from '@/components/Analyze/Section/gridTemplates/SplitTemplate';
-import { getWidgetSize } from '@/utils/format';
+import { ScrollspySectionWrapper } from '@/components/Scrollspy/SectionWrapper';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+import { getWidgetSize } from '@/lib/charts-utils/utils';
 import * as React from 'react';
 
 function getLocalTimezoneOffset() {
@@ -11,31 +11,22 @@ function getLocalTimezoneOffset() {
 
 export default function CodeSubmissionContent () {
   return (
-    <SectionTemplate
-      id="code-submission"
-      title="Code Submission"
-      level={3}
-      className="pt-8 flex flex-col gap-4"
-    >
-      <ChartTemplate
-        name='@ossinsight/widget-compose-org-activity-growth-total'
-        visualizer={() => import('@/charts/compose/org/activity-growth-total/visualization')}
-        searchParams={{
-          activity: 'commits',
-        }}
-        className="w-full"
-        height={getWidgetSize().widgetWidth(4)}
-      />
-      <SplitTemplate>
-        <OrgCommitsTimeDistribution />
+    <ScrollspySectionWrapper anchor="code-submission" className="pt-8 pb-8">
+      <SectionHeading level="h3">Code Submission</SectionHeading>
+      <div className="flex flex-col gap-4">
         <ChartTemplate
-          name="@ossinsight/widget-compose-org-code-changes-top-repositories"
-          visualizer={() => import('@/charts/compose/org/code-changes-top-repositories/visualization')}
-          searchParams={{}}
-          height={316}
+          name='@ossinsight/widget-compose-org-activity-growth-total'
+          title='Commit Growth'
+          visualizer={() => import('@/charts/analyze/org/recent-stats/visualization')}
+          searchParams={{
+            activity: 'commits',
+          }}
+          className="w-full"
+          height={getWidgetSize().widgetWidth(4)}
         />
-      </SplitTemplate>
-    </SectionTemplate>
+        <OrgCommitsTimeDistribution />
+      </div>
+    </ScrollspySectionWrapper>
   );
 }
 
@@ -43,9 +34,10 @@ function OrgCommitsTimeDistribution (props: { className?: string }) {
   const zone = React.useMemo(() => getLocalTimezoneOffset(), []);
 
   return (
-    <div className={props.className}>
+    <div className="w-1/2">
       <ChartTemplate
         name="@ossinsight/widget-analyze-org-commits-time-distribution"
+        title="Commit Time Distribution"
         visualizer={() => import('@/charts/analyze/org/commits-time-distribution/visualization')}
         searchParams={{
           zone: `${zone}`,
