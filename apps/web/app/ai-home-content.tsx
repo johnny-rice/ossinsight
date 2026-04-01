@@ -60,6 +60,22 @@ function pickTopic(topics: string[]): string {
 }
 
 
+// Convert a remote image URL to base64 data URL
+async function toDataUrl(url: string): Promise<string> {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return '';
+  }
+}
+
 // Build a 4K export — uses canvas directly for reliability
 async function export4KTreemap(treemapData: any[], title: string) {
   // Use the already-registered global echarts
@@ -121,6 +137,28 @@ async function export4KTreemap(treemapData: any[], title: string) {
     };
   });
 
+  // Convert all avatar URLs to base64 to avoid canvas taint
+  const avatarMap = new Map<string, string>();
+  const avatarUrls = new Set<string>();
+  for (const group of exportData) {
+    for (const child of group.children || []) {
+      const img = child.label?.rich?.avatar?.backgroundColor?.image;
+      if (img) avatarUrls.add(img);
+    }
+  }
+  await Promise.all([...avatarUrls].map(async (u) => {
+    const dataUrl = await toDataUrl(u);
+    if (dataUrl) avatarMap.set(u, dataUrl);
+  }));
+  for (const group of exportData) {
+    for (const child of group.children || []) {
+      const img = child.label?.rich?.avatar?.backgroundColor?.image;
+      if (img && avatarMap.has(img)) {
+        child.label.rich.avatar.backgroundColor.image = avatarMap.get(img);
+      }
+    }
+  }
+
   instance.setOption({
     backgroundColor: '#0d1117',
     graphic: [
@@ -171,35 +209,11 @@ async function export4KTreemap(treemapData: any[], title: string) {
     }],
   });
 
-  // Preload avatar images
-  const avatarUrls = new Set<string>();
-  for (const group of exportData) {
-    for (const child of group.children || []) {
-      const img = child.label?.rich?.avatar?.backgroundColor?.image;
-      if (img) avatarUrls.add(img);
-    }
-  }
-  await Promise.all([...avatarUrls].map(url =>
-    new Promise<void>(resolve => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => resolve();
-      img.onerror = () => resolve();
-      img.src = url;
-    })
-  ));
+  // Wait for ECharts to render
+  await new Promise(r => setTimeout(r, 500));
 
-  // Wait for ECharts to render with loaded images
-  await new Promise(r => setTimeout(r, 800));
-
-  let url: string;
-  try {
-    const canvas = container.querySelector('canvas');
-    url = canvas ? canvas.toDataURL('image/png') : instance.getDataURL({ type: 'png', pixelRatio: 1, backgroundColor: '#0d1117' });
-  } catch {
-    // Canvas tainted by cross-origin images — fallback
-    url = instance.getDataURL({ type: 'png', pixelRatio: 1, backgroundColor: '#0d1117' });
-  }
+  const canvas = container.querySelector('canvas');
+  const url = canvas ? canvas.toDataURL('image/png') : instance.getDataURL({ type: 'png', pixelRatio: 1, backgroundColor: '#0d1117' });
 
   instance.dispose();
   document.body.removeChild(container);
