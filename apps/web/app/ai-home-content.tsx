@@ -19,7 +19,7 @@ function formatK(n: number): string {
   return String(n);
 }
 
-const COLORS = ['#57ab5a', '#e5534b', '#539bf5', '#f0883e', '#a371f7', '#768390', '#f778ba', '#57c4dc', '#d4976c', '#6cb6ff', '#b392f0', '#f97583', '#79c0ff', '#7ee787', '#d2a8ff', '#ffa657'];
+const COLORS = ['#6ec6a5', '#7eb8e0', '#e8a87c', '#b19cd9', '#7ecba1', '#f0a0a0', '#87cefa', '#c4b078', '#a0d2db', '#d4a5c4', '#8cc084', '#e6c87e', '#8faabe', '#c9a0dc', '#6dc8c8', '#d4a07a'];
 
 // Pick the most representative topic for a repo (prefer AI-related)
 const AI_TOPICS = new Set([
