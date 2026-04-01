@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 
 export const revalidate = 3600;
 
@@ -18,5 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default function TrendingLandscapePage() {
-  redirect('/');
+  return (
+    <meta httpEquiv="refresh" content="0;url=/" />
+  );
 }
