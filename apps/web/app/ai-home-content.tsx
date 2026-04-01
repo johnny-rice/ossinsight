@@ -160,11 +160,6 @@ async function export4KTreemap(treemapData: any[], title: string) {
   return url;
 }
 
-function shareToTwitter() {
-  const text = encodeURIComponent('Open Source Trending — Topic Landscape\n\nDiscover trending repos grouped by topic\n\n@OSSInsight');
-  const url = encodeURIComponent('https://ossinsight.io/share/trending');
-  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'noopener,noreferrer');
-}
 
 export default function AIHomeContent({ categories, trendingRepos }: AIHomeProps) {
   const router = useRouter();
@@ -182,9 +177,6 @@ export default function AIHomeContent({ categories, trendingRepos }: AIHomeProps
     triggerDownload(url, 'ossinsight-trending-4k.png');
   }, []);
 
-  const handleShare = useCallback(() => {
-    shareToTwitter();
-  }, []);
 
   const treemapOption = useMemo(() => {
     // Group by topic
@@ -301,14 +293,6 @@ export default function AIHomeContent({ categories, trendingRepos }: AIHomeProps
           >
             <Download className="h-4 w-4" />
             Download 4K
-          </button>
-          <button
-            type="button"
-            onClick={handleShare}
-            className="flex h-9 items-center gap-2 rounded-md border border-[#444] bg-[#1a1a1a] px-4 text-[14px] font-medium text-white transition hover:border-[#666] hover:bg-[#2a2a2a]"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            Share to X
           </button>
         </div>
         <LazyECharts option={treemapOption} style={{ height: 500, width: '100%' }} onEvents={{ click: onTreemapClick }} />
