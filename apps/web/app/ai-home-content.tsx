@@ -21,8 +21,15 @@ function formatK(n: number): string {
   return String(n);
 }
 
-// Group tint colors — medium saturation, good variety
-const GROUP_TINTS = ['#4ecdc4', '#6c8cff', '#ff8a65', '#ab7df0', '#5cb85c', '#e06c75', '#45b7d1', '#f0c040', '#26c6da', '#d47ecf', '#7cb342', '#ffa726', '#5c9de6', '#c770b0', '#2ec4a0', '#e8a050', '#6abecd', '#d4a05a', '#7986cb', '#e57373'];
+// Group tint colors — deeper tones for dark background
+const GROUP_TINTS = ['#2a9d8f', '#4a6cf7', '#c96a45', '#8b5dcf', '#3d8b3d', '#b84c55', '#2e8aa8', '#c49a20', '#1a9bab', '#a85daa', '#5a8a22', '#c98520', '#3d7cc4', '#a25090', '#1f9a7a', '#b87830', '#4a8da5', '#a87a30', '#5a6aab', '#b85050'];
+
+// Light tints need dark text when alpha is high enough
+const LIGHT_TINTS = new Set(['#c49a20', '#c98520', '#b87830', '#a87a30']);
+const textColorFor = (hex: string, alpha: number) => {
+  if (LIGHT_TINTS.has(hex) && alpha > 0.4) return 'rgba(0,0,0,0.8)';
+  return '#fff';
+};
 
 // Pick the most representative topic for a repo (prefer AI-related)
 const AI_TOPICS = new Set([
@@ -68,29 +75,32 @@ async function export4KTreemap(treemapData: any[], title: string) {
   // Rebuild data with solid colors and large labels
   const exportData = treemapData.map((group: any, gi: number) => {
     const tint = GROUP_TINTS[gi % GROUP_TINTS.length];
+    const groupAlpha = 0.35;
+    const groupTextColor = textColorFor(tint, groupAlpha);
     return {
       name: group.name,
-      itemStyle: { color: tint, colorAlpha: 0.35 },
-      label: { show: true, color: '#fff', fontSize: 26, fontWeight: 700 },
-      children: (group.children || []).map((child: any) => ({
-        name: child.shortName || child.name,
-        value: child.value,
-        stars: child.stars,
-        repoName: child.repoName,
-        shortName: child.shortName,
-        itemStyle: {
-          color: tint,
-          colorAlpha: 0.35 + Math.min((child.stars ?? 0) / ((group.children?.[0]?.stars) || 1) * 0.45, 0.45),
-        },
-        label: {
-          show: true,
-          color: '#fff',
-          fontSize: Math.max(Math.log2(child.stars || 1) * 3, 16),
-          fontWeight: 500,
-          overflow: 'truncate',
-          ellipsis: '..',
-        },
-      })),
+      itemStyle: { color: tint, colorAlpha: groupAlpha },
+      label: { show: true, color: groupTextColor, fontSize: 28, fontWeight: 600 },
+      children: (group.children || []).map((child: any) => {
+        const childAlpha = 0.35 + Math.min((child.stars ?? 0) / ((group.children?.[0]?.stars) || 1) * 0.45, 0.45);
+        const childTextColor = textColorFor(tint, childAlpha);
+        return {
+          name: child.shortName || child.name,
+          value: child.value,
+          stars: child.stars,
+          repoName: child.repoName,
+          shortName: child.shortName,
+          itemStyle: { color: tint, colorAlpha: childAlpha },
+          label: {
+            show: true,
+            color: childTextColor,
+            fontSize: Math.max(Math.sqrt(child.stars || 1) * 0.75, 16),
+            fontWeight: 500,
+            overflow: 'truncate',
+            ellipsis: '..',
+          },
+        };
+      }),
     };
   });
 
@@ -120,21 +130,24 @@ async function export4KTreemap(treemapData: any[], title: string) {
       label: {
         show: true,
         color: '#fff',
-        fontSize: 20,
+        fontWeight: 500,
         overflow: 'truncate',
         ellipsis: '..',
         formatter: '{b}',
+        textShadowColor: 'rgba(0,0,0,0.5)',
+        textShadowBlur: 3,
       },
       upperLabel: {
         show: true,
-        height: 48,
+        height: 52,
         color: '#fff',
-        fontSize: 28,
-        fontWeight: 700,
-        fontFamily: "'Inter', -apple-system, sans-serif",
-        backgroundColor: 'rgba(0,0,0,0.35)',
-        padding: [8, 16],
+        fontSize: 32,
+        fontWeight: 600,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        padding: [10, 18],
         formatter: '{b}',
+        textShadowColor: 'rgba(0,0,0,0.5)',
+        textShadowBlur: 3,
       },
       levels: [
         { itemStyle: { borderColor: 'rgba(255,255,255,0.15)', borderWidth: 4, gapWidth: 6 }, upperLabel: { show: true } },
@@ -227,21 +240,21 @@ export default function AIHomeContent({ categories, trendingRepos }: AIHomeProps
         },
         label: {
           show: true,
-          color: 'rgba(255,255,255,0.85)',
-          fontSize: 11,
+          color: '#fff',
+          fontSize: 12,
+          fontWeight: 500,
           formatter: (p: any) => p.data?.shortName || p.name,
+          textShadowColor: 'rgba(0,0,0,0.5)',
+          textShadowBlur: 3,
         },
         upperLabel: {
           show: true,
-          height: 26,
+          height: 24,
           color: '#fff',
           fontSize: 12,
           fontWeight: 600,
-          fontFamily: "'Inter', 'SF Pro Display', -apple-system, sans-serif",
-          letterSpacing: 0.5,
-          textTransform: 'uppercase',
           backgroundColor: 'transparent',
-          textShadowColor: 'rgba(0,0,0,0.4)',
+          textShadowColor: 'rgba(0,0,0,0.5)',
           textShadowBlur: 3,
         },
         levels: [
@@ -260,22 +273,23 @@ export default function AIHomeContent({ categories, trendingRepos }: AIHomeProps
             name: group.name,
             itemStyle: { color: 'transparent' },
             emphasis: { itemStyle: { color: tint, colorAlpha: 0.12 } },
-            children: group.repos.map((repo: any) => ({
-              name: repo.repo_name,
-              shortName: repo.repo_name.split('/')[1] || repo.repo_name,
-              repoName: repo.repo_name,
-              value: Math.max(repo.stars || 100, 100),
-              stars: repo.stars,
-              desc: repo.description,
-              itemStyle: {
-                color: tint,
-                colorAlpha: 0.15 + Math.min((repo.stars ?? 0) / (group.repos[0]?.stars || 1) * 0.2, 0.2),
-              },
-              emphasis: {
-                itemStyle: { color: tint, colorAlpha: 0.45 },
-              },
-              label: { fontSize: Math.max(Math.log2(repo.stars || 1) * 1.3, 8) },
-            })),
+            children: group.repos.map((repo: any) => {
+              const alpha = 0.15 + Math.min((repo.stars ?? 0) / (group.repos[0]?.stars || 1) * 0.2, 0.2);
+              return {
+                name: repo.repo_name,
+                shortName: repo.repo_name.split('/')[1] || repo.repo_name,
+                repoName: repo.repo_name,
+                value: Math.max(repo.stars || 100, 100),
+                stars: repo.stars,
+                desc: repo.description,
+                itemStyle: { color: tint, colorAlpha: alpha },
+                emphasis: { itemStyle: { color: tint, colorAlpha: 0.45 } },
+                label: {
+                  fontSize: Math.max(Math.sqrt(repo.stars || 1) * 0.25, 9),
+                  color: textColorFor(tint, alpha),
+                },
+              };
+            }),
           };
         })),
       }],
