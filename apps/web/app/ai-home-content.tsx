@@ -162,7 +162,7 @@ async function export4KTreemap(treemapData: any[], title: string) {
 
 function shareToTwitter() {
   const text = encodeURIComponent('Open Source Trending — Topic Landscape\n\nDiscover trending repos grouped by topic\n\n@OSSInsight');
-  const url = encodeURIComponent('https://ossinsight.io/trending-landscape');
+  const url = encodeURIComponent('https://ossinsight.io/share/trending');
   window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'noopener,noreferrer');
 }
 

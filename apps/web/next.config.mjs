@@ -38,7 +38,7 @@ const nextConfig = {
     return [];
   },
   pageExtensions: ['ts', 'tsx', 'mdx'],
-  serverExternalPackages: ['@napi-rs/canvas'],
+  serverExternalPackages: ['@napi-rs/canvas', '@resvg/resvg-js'],
   turbopack: {
     resolveAlias: {
       '@tanstack/react-query': './node_modules/@tanstack/react-query',
