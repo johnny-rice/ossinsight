@@ -91,14 +91,14 @@ async function export4KTreemap(treemapData: any[], title: string) {
   // Rebuild data with solid colors and large labels
   const exportData = treemapData.map((group: any, gi: number) => {
     const tint = GROUP_TINTS[gi % GROUP_TINTS.length];
-    const groupAlpha = 0.35;
+    const groupAlpha = 0.5;
     const groupTextColor = textColorFor(tint, groupAlpha);
     return {
       name: group.name,
       itemStyle: { color: tint, colorAlpha: groupAlpha },
       label: { show: true, color: groupTextColor, fontSize: 28, fontWeight: 600 },
       children: (group.children || []).map((child: any) => {
-        const childAlpha = 0.35 + Math.min((child.stars ?? 0) / ((group.children?.[0]?.stars) || 1) * 0.45, 0.45);
+        const childAlpha = 0.5 + Math.min((child.stars ?? 0) / ((group.children?.[0]?.stars) || 1) * 0.4, 0.4);
         const childTextColor = textColorFor(tint, childAlpha);
         const fs = Math.max(Math.sqrt(child.stars || 1) * 0.75, 16);
         const owner = (child.repoName || child.name || '').split('/')[0] || '';
@@ -120,7 +120,7 @@ async function export4KTreemap(treemapData: any[], title: string) {
             formatter: `{avatar|} {name|${displayName}}`,
             rich: {
               avatar: {
-                backgroundColor: { image: `https://github.com/${owner}.png?size=80` },
+                backgroundColor: { image: `/api/avatar/${owner}` },
                 width: avatarSize,
                 height: avatarSize,
                 borderRadius: avatarSize / 2,
