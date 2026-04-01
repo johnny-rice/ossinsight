@@ -261,13 +261,17 @@ export default function AIHomeContent({ categories, trendingRepos }: AIHomeProps
       backgroundColor: 'transparent',
       tooltip: {
         formatter: (p: any) => {
-          if (!p.data?.repoName) return `<b>${p.name}</b>`;
-          return `<div style="font-size:12px">
-            <b style="color:#fff">${p.data.repoName}</b><br/>
-            ★ ${Number(p.data.stars || 0).toLocaleString()}<br/>
-            ${p.data.desc ? `<div style="color:#aaa;margin-top:4px;max-width:280px">${String(p.data.desc).slice(0, 100)}</div>` : ''}
+          if (!p.data?.repoName) {
+            return `<div style="max-width:320px;white-space:normal;word-break:break-word;overflow-wrap:anywhere"><b>${p.name}</b></div>`;
+          }
+          return `<div style="max-width:320px;font-size:12px;line-height:1.45;white-space:normal;word-break:break-word;overflow-wrap:anywhere">
+            <div style="color:#fff;font-weight:700">${p.data.repoName}</div>
+            <div style="margin-top:2px">★ ${Number(p.data.stars || 0).toLocaleString()}</div>
+            ${p.data.desc ? `<div style="color:#aaa;margin-top:6px">${String(p.data.desc).slice(0, 100)}</div>` : ''}
           </div>`;
         },
+        confine: true,
+        extraCssText: 'max-width:min(320px, calc(100vw - 32px));white-space:normal;word-break:break-word;overflow-wrap:anywhere;line-height:1.45;',
         backgroundColor: '#222',
         borderColor: '#444',
         textStyle: { color: '#eee' },
