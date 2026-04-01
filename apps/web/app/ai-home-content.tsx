@@ -84,8 +84,12 @@ async function export4KTreemap(treemapData: any[], title: string) {
       children: (group.children || []).map((child: any) => {
         const childAlpha = 0.35 + Math.min((child.stars ?? 0) / ((group.children?.[0]?.stars) || 1) * 0.45, 0.45);
         const childTextColor = textColorFor(tint, childAlpha);
+        const fs = Math.max(Math.sqrt(child.stars || 1) * 0.75, 16);
+        const owner = (child.repoName || child.name || '').split('/')[0] || '';
+        const avatarSize = Math.max(Math.round(fs * 1.4), 16);
+        const displayName = child.shortName || child.name;
         return {
-          name: child.shortName || child.name,
+          name: displayName,
           value: child.value,
           stars: child.stars,
           repoName: child.repoName,
@@ -93,11 +97,24 @@ async function export4KTreemap(treemapData: any[], title: string) {
           itemStyle: { color: tint, colorAlpha: childAlpha },
           label: {
             show: true,
-            color: childTextColor,
-            fontSize: Math.max(Math.sqrt(child.stars || 1) * 0.75, 16),
+            fontSize: fs,
             fontWeight: 500,
             overflow: 'truncate',
             ellipsis: '..',
+            formatter: `{avatar|} {name|${displayName}}`,
+            rich: {
+              avatar: {
+                backgroundColor: { image: `https://github.com/${owner}.png?size=80` },
+                width: avatarSize,
+                height: avatarSize,
+                borderRadius: avatarSize / 2,
+              },
+              name: {
+                fontSize: fs,
+                color: childTextColor,
+                verticalAlign: 'middle',
+              },
+            },
           },
         };
       }),
@@ -129,13 +146,10 @@ async function export4KTreemap(treemapData: any[], title: string) {
       itemStyle: { borderColor: 'rgba(255,255,255,0.1)', borderWidth: 2, gapWidth: 4 },
       label: {
         show: true,
-        color: '#fff',
         fontWeight: 500,
         overflow: 'truncate',
         ellipsis: '..',
         formatter: '{b}',
-        textShadowColor: 'rgba(0,0,0,0.5)',
-        textShadowBlur: 3,
       },
       upperLabel: {
         show: true,
@@ -157,14 +171,33 @@ async function export4KTreemap(treemapData: any[], title: string) {
     }],
   });
 
-  // Wait for ECharts to finish rendering
-  await new Promise(r => setTimeout(r, 500));
+  // Preload avatar images
+  const avatarUrls = new Set<string>();
+  for (const group of exportData) {
+    for (const child of group.children || []) {
+      const img = child.label?.rich?.avatar?.backgroundColor?.image;
+      if (img) avatarUrls.add(img);
+    }
+  }
+  await Promise.all([...avatarUrls].map(url =>
+    new Promise<void>(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve();
+      img.onerror = () => resolve();
+      img.src = url;
+    })
+  ));
 
-  const canvas = container.querySelector('canvas');
+  // Wait for ECharts to render with loaded images
+  await new Promise(r => setTimeout(r, 800));
+
   let url: string;
-  if (canvas) {
-    url = canvas.toDataURL('image/png');
-  } else {
+  try {
+    const canvas = container.querySelector('canvas');
+    url = canvas ? canvas.toDataURL('image/png') : instance.getDataURL({ type: 'png', pixelRatio: 1, backgroundColor: '#0d1117' });
+  } catch {
+    // Canvas tainted by cross-origin images — fallback
     url = instance.getDataURL({ type: 'png', pixelRatio: 1, backgroundColor: '#0d1117' });
   }
 
@@ -243,7 +276,6 @@ export default function AIHomeContent({ categories, trendingRepos }: AIHomeProps
           color: '#fff',
           fontSize: 12,
           fontWeight: 500,
-          formatter: (p: any) => p.data?.shortName || p.name,
           textShadowColor: 'rgba(0,0,0,0.5)',
           textShadowBlur: 3,
         },
@@ -275,6 +307,9 @@ export default function AIHomeContent({ categories, trendingRepos }: AIHomeProps
             emphasis: { itemStyle: { color: tint, colorAlpha: 0.12 } },
             children: group.repos.map((repo: any) => {
               const alpha = 0.15 + Math.min((repo.stars ?? 0) / (group.repos[0]?.stars || 1) * 0.2, 0.2);
+              const fs = Math.max(Math.sqrt(repo.stars || 1) * 0.25, 9);
+              const owner = repo.repo_name.split('/')[0] || '';
+              const avatarSize = Math.max(Math.round(fs * 1.4), 12);
               return {
                 name: repo.repo_name,
                 shortName: repo.repo_name.split('/')[1] || repo.repo_name,
@@ -285,8 +320,24 @@ export default function AIHomeContent({ categories, trendingRepos }: AIHomeProps
                 itemStyle: { color: tint, colorAlpha: alpha },
                 emphasis: { itemStyle: { color: tint, colorAlpha: 0.45 } },
                 label: {
-                  fontSize: Math.max(Math.sqrt(repo.stars || 1) * 0.25, 9),
+                  fontSize: fs,
                   color: textColorFor(tint, alpha),
+                  formatter: `{avatar|} {name|${repo.repo_name.split('/')[1] || repo.repo_name}}`,
+                  rich: {
+                    avatar: {
+                      backgroundColor: {
+                        image: `https://github.com/${owner}.png?size=40`,
+                      },
+                      width: avatarSize,
+                      height: avatarSize,
+                      borderRadius: avatarSize / 2,
+                    },
+                    name: {
+                      fontSize: fs,
+                      color: textColorFor(tint, alpha),
+                      verticalAlign: 'middle',
+                    },
+                  },
                 },
               };
             }),
