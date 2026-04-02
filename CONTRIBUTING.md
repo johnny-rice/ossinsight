@@ -11,7 +11,7 @@ There are many ways to contribute to OSS Insight, and many of them do not involv
   - Does everything work as expected? If not, we're always looking for improvements. Let us know by [**opening an issue**](https://github.com/pingcap/ossinsight/blob/main/CONTRIBUTING.md#issue).
 - If you want to add a collection on our OSS Insight website, you can also [**add a collection**](https://github.com/pingcap/ossinsight/blob/main/CONTRIBUTING.md#add-a-collection) by submitting PRs.
 - Look through the [open issues](https://github.com/pingcap/ossinsight/issues). Provide workarounds, ask for clarification, or suggest labels. If you find an issue you would like to fix, [**open a pull request**](https://github.com/pingcap/ossinsight/blob/main/CONTRIBUTING.md#pull-requests). 
-- Read through the [OSS Insight Blogs](https://ossinsight.io/blog/). If you find anything that is confusing or can be improved, you can click "Edit this page" at the bottom of most docs, which takes you to the GitHub interface to make and propose changes.
+- Read through the [OSS Insight Blogs](https://ossinsight.io/blog/). If you find anything that is confusing or can be improved, feel free to open a PR.
 - If you have message or experience about using OSS Insight, you are welcome to [**add a new blog**](https://github.com/pingcap/ossinsight/blob/main/CONTRIBUTING.md#add-a-blog).
 
 
